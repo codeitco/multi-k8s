@@ -1,67 +1,25 @@
 sudo: required
-
-#-----------------------------
-# services to use with travis
-#-----------------------------
 services:
   - docker
-
-#---------------------------
-# set environment variables
-#---------------------------
 env:
   global:
-    # store current commmit ID as env-var
     - SHA=$(git rev-parse HEAD)
-
-    # disable prompts on g-cloud during travis deployments
     - CLOUDSDK_CORE_DISABLE_PROMPTS=1
-
-#------------------------
-# prepare dependances
-#------------------------
 before_install:
-  # decrypt g-cloud service account to authenticate
   - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
-
-  # download g-cloud CLI
   - curl https://sdk.cloud.google.com | bash > /dev/null;
-
-  # apply the path to the g-cloud source directory
   - source $HOME/google-cloud-sdk/path.bash.inc
-
-  # make sure g-cloud is running latest version of 'kubectl'
   - gcloud components update kubectl
-
-  # authenticate g-cloud cli with the decrypted g-cloud service-account credentials above
   - gcloud auth activate-service-account --key-file service-account.json
-
-  # configure the g-cloud cluster to be used
   - gcloud config set project multi-k8s-274002
   - gcloud config set compute/zone us-central1-c
   - gcloud container clusters get-credentials multi-cluster
-
-  # login to docker via cli with docker credentials
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-
-  # build a test image to prepare for running all test suites
   - docker build -t crazypikis/react-test -f ./client/Dockerfile.dev ./client
-
-#------------------------
-# scripts before deploy
-#------------------------
 script:
-  # run all test suites on any applicable contexts
   - docker run -e CI=true crazypikis/react-test npm run test
-
-#------------------------
-# app deployments
-#------------------------
 deploy:
-  # run manual deployment script
   provider: script
   script: bash ./deploy.sh
-
-  # only run deployment script if on master branch
   on:
     branch: master
