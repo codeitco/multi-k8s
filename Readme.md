@@ -75,3 +75,48 @@ If you are using Docker Desktop's built-in Kubernetes, setting up the admin dash
 
 Important! The only reason we are bypassing RBAC Authorization to access the Kubernetes Dashboard is because we are running our cluster locally. You would never do this on a public facing server like Digital Ocean and would need to refer to the official docs to get the dashboard setup:
 https://github.com/kubernetes/dashboard/wiki/Access-control
+
+## Configuring G-Cloud Kubernetes Cluster for command shell access with kubectl
+
+Every time a new kubernetes cluster is created in G-Cloud for a new project, to access and use the "kubectl" command to create secrets in the cloud or other configuration data, the following steps will need to be followed:
+
+1.  Open the Cloud Shell in G-Cloud Dashboard (icon on top bar)
+
+2.  Type the following commands:
+
+    ```
+    gcloud config set project [GCLOUD PROJECT NAME ID]
+    gcloud config set compute/zone [GCLOUD COMPUTE ZONE]
+    gcloud container clusters get-credentials [CLUSTER NAME]
+    ```
+
+    Usage Example:
+
+    ```
+    gcloud config set project multi-k8s-274002
+    gcloud config set compute/zone us-central1-c
+    gcloud container clusters get-credentials multi-cluster
+    ```
+
+    NOTE: These commands only need to be run ONCE per active kubernetes cluster in the G-Cloud.
+
+## Add HELM V3 to G-Cloud Cluster and Install Ingress-Nginx
+
+1.  Open the Cloud Shell in G-Cloud Dashboard (icon on top bar)
+
+2.  Run these commands to install and configure HEML V3:
+
+    ```
+    curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
+    chmod 700 get_helm.sh
+    ./get_helm.sh
+    ```
+
+3.  Run these commands to install and configure Ingress-Nginx with HELM V3:
+
+    ```
+    helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+    helm install my-nginx stable/nginx-ingress --set rbac.create=true
+    ```
+
+    Essentially this allows the creation of ingress/routing configurations and rules to the current kubernetes cluster via HELM V3 while still keeping kubernetes security standards intact.
