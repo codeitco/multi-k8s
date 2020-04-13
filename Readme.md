@@ -1,5 +1,8 @@
 # Multi-docker deployment with Kubernetes
 
+File references:
+https://github.com/StephenGrider/DockerCasts/tree/master/complex
+
 ## Creating SECRETS to securely store sensitive information within the k8s cluster
 
 ### Types of secrets
